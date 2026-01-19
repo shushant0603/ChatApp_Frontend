@@ -1,135 +1,131 @@
-import { FiUser, FiMail, FiLock, FiArrowRight } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link,useNavigate } from "react-router-dom";
+import { register } from "../api/Auth/auth.routes";
 
-const Register = () => {
+type MessageType = "success" | "error";
+
+const Register: React.FC = () => {
+   const navigate = useNavigate();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<MessageType | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async () => {
+    setLoading(true);
+
+    try {
+      const response = await register(name, email, password);
+
+      setMessage(response.data.message || "Registration successful 🎉");
+      setMessageType("success");
+
+       setName("");
+       setEmail("");
+       setPassword("");
+      setTimeout(() => {
+     navigate("/verify-otp", {
+      state: {
+       email: response.data.email || email,
+     },
+   });
+   }, 1500);
+
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      setMessage(
+        err?.response?.data?.message ||
+          "Registration failed , Please try again."
+      );
+      setMessageType("error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔥 auto-hide popup
+  useEffect(() => {
+    if (!message) return;
+
+    const timer = setTimeout(() => {
+      setMessage(null);
+      setMessageType(null);
+  
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [message]);
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Navbar */}
-      <header className="bg-white border-b border-gray-200">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link
-            to="/"
-            className="text-3xl font-bold text-[#FF9A00] hover:opacity-90 transition"
-          >
-            Apex
-          </Link>
-
-          <Link
-            to="/"
-            className="text-gray-700 hover:text-gray-900 font-medium transition"
-          >
-            Back to Home
-          </Link>
-        </nav>
-      </header>
-
-      {/* Page Content */}
-      <main className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-10">
-        <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Card Header */}
-          <div className="bg-orange-500 px-8 py-6 text-white">
-            <h2 className="text-2xl font-bold mb-1">Get Started</h2>
-            <p className="text-sm opacity-90">
-              Create your account to start chatting with customers
-            </p>
-          </div>
-
-          {/* Form */}
-          <form className="px-8 py-6 space-y-5">
-            {/* Full Name */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Full Name
-              </label>
-              <div className="relative">
-                <FiUser className="absolute left-3 top-3.5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="John Doe"
-                  className="w-full pl-10 pr-4 py-2.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Email Address
-              </label>
-              <div className="relative">
-                <FiMail className="absolute left-3 top-3.5 text-gray-400" />
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Password
-              </label>
-              <div className="relative">
-                <FiLock className="absolute left-3 top-3.5 text-gray-400" />
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <FiLock className="absolute left-3 top-3.5 text-gray-400" />
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-            </div>
-
-            {/* Button */}
-            <button
-              type="submit"
-              className="w-full bg-orange-500 text-white py-3 rounded-md font-semibold flex items-center justify-center gap-2 hover:bg-orange-600 transition"
-            >
-              Create Account
-              <FiArrowRight />
-            </button>
-
-            {/* Terms */}
-            <p className="text-xs text-center text-gray-500">
-              By signing up, you agree to our{" "}
-              <span className="text-orange-500 hover:underline cursor-pointer">
-                Terms of Service
-              </span>{" "}
-              and{" "}
-              <span className="text-orange-500 hover:underline cursor-pointer">
-                Privacy Policy
-              </span>
-            </p>
-
-            {/* Login */}
-            <p className="text-sm text-center text-gray-600">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-orange-500 font-semibold hover:underline"
-              >
-                Login here
-              </Link>
-            </p>
-          </form>
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white relative">
+      {/* Popup Message */}
+      {message && (
+        <div
+          className={`fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg
+            ${
+              messageType === "success"
+                ? "bg-green-500 text-black"
+                : "bg-red-500 text-white"
+            }`}
+        >
+          {message}
         </div>
-      </main>
+      )}
+
+      <div className="w-full max-w-md bg-slate-900 p-8 rounded-2xl shadow-lg">
+        <h2 className="text-3xl font-bold text-center mb-6">Create Account</h2>
+
+        {/* form */}
+        <div className="space-y-4">
+          <input
+            type="text"
+            placeholder="Name"
+            className="w-full px-4 py-3 rounded-lg bg-slate-800"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full px-4 py-3 rounded-lg bg-slate-800"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full px-4 py-3 rounded-lg bg-slate-800"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button
+            onClick={handleRegister}
+            disabled={loading}
+            className={`w-full py-3 rounded-lg font-semibold
+              ${
+                loading
+                  ? "bg-slate-600"
+                  : "bg-sky-400 text-black hover:bg-sky-300"
+              }`}
+          >
+            {loading ? "Registering..." : "Sign Up"}
+          </button>
+        </div>
+
+        <p className="text-center text-slate-400 mt-6">
+          Already have an account?{" "}
+          <Link to="/login" className="text-sky-400">
+            Login
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };
