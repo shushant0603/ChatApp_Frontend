@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { HiOutlineMenu, HiX } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
 
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const navLinks = [
     { href: "#", label: "Demos" },
@@ -13,6 +15,11 @@ export default function Header() {
     { href: "#", label: "Pages" },
     { href: "#", label: "Contact" },
   ];
+  const handleLogin = () => {
+    // Implement login logic here
+    navigate("/login");
+    
+  }
 
   return (
     <header className="fixed w-full bg-white z-50">
@@ -37,12 +44,12 @@ export default function Header() {
 
         {/* Desktop Right Section */}
         <div className="hidden md:flex items-center gap-4">
-          <a
-            href="#"
+          <button
+            onClick={handleLogin}
             className="text-gray-700 hover:text-gray-900 hover:bg-pink-300 px-7 py-3 rounded-md   text-md font-medium transition"
           >
             Login
-          </a>
+          </button>
           <button className="bg-apex-orange text-white px-7 py-3 rounded-lg text-sm font-medium bg-orange-500   transition">
             Get Started Free
           </button>
