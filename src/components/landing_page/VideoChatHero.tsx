@@ -1,6 +1,6 @@
 import { FiRefreshCw, FiVideo, FiThumbsUp } from "react-icons/fi";
 import { HiPhoneMissedCall } from "react-icons/hi";
-import photo_1 from '../assets/photo_1.png';
+import photo_1 from '../../assets/photo_1.png';
 
 const VideoChatHero: React.FC = () => {
   return (
