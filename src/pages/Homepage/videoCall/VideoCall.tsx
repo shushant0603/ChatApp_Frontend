@@ -1,54 +1,58 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import socket from "../../../api/socket";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 type CallState = "calling" | "incoming" | "connected" | "ended";
 
 const VideoCall = () => {
-  const { chatId } = useParams<{ chatId: string }>();
-  const location = useLocation();
+  const { chatId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const isIncoming = location.state?.isIncoming || false;
+  const { isIncoming, callerId } = location.state || {};
 
   const [callState, setCallState] = useState<CallState>(
     isIncoming ? "incoming" : "calling"
   );
 
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const peerRef = useRef<RTCPeerConnection | null>(null);
-  const localStreamRef = useRef<MediaStream | null>(null);
+  const localVideo = useRef<HTMLVideoElement>(null);
+  const remoteVideo = useRef<HTMLVideoElement>(null);
+  const peer = useRef<RTCPeerConnection | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  /* ---------------- CAMERA ---------------- */
-
-  const startCamera = async () => {
-    if (localStreamRef.current) return localStreamRef.current;
+ const startCamera = async () => {
+  try {
+    if (streamRef.current) return streamRef.current;
 
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: true,
     });
 
-    localStreamRef.current = stream;
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = stream;
-    }
-    return stream;
-  };
+    streamRef.current = stream;
 
-  /* ---------------- PEER ---------------- */
+    if (localVideo.current) {
+      localVideo.current.srcObject = stream;
+    }
+
+    return stream;
+  } catch (err) {
+    console.error("❌ Camera/Mic permission error:", err);
+    alert("Camera or Mic permission denied");
+  }
+};
+
 
   const createPeer = () => {
-    if (peerRef.current) return peerRef.current;
+    if (peer.current) return peer.current;
 
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
     });
 
     pc.ontrack = (e) => {
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = e.streams[0];
+      if (remoteVideo.current) {
+        remoteVideo.current.srcObject = e.streams[0];
       }
     };
 
@@ -58,20 +62,14 @@ const VideoCall = () => {
       }
     };
 
-    peerRef.current = pc;
+    peer.current = pc;
     return pc;
   };
-
-  const addTracks = (pc: RTCPeerConnection, stream: MediaStream) => {
-    stream.getTracks().forEach((t) => pc.addTrack(t, stream));
-  };
-
-  /* ---------------- OFFER (CALLER) ---------------- */
 
   const createOffer = async () => {
     const stream = await startCamera();
     const pc = createPeer();
-    addTracks(pc, stream);
+    stream.getTracks().forEach((t) => pc.addTrack(t, stream));
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
@@ -79,15 +77,7 @@ const VideoCall = () => {
     socket.emit("webrtc-offer", { chatId, offer });
   };
 
-  /* ---------------- SOCKET EVENTS ---------------- */
-
   useEffect(() => {
-    if (!chatId) return;
-
-    if (!isIncoming) {
-      socket.emit("start-video-call", { chatId });
-    }
-
     socket.on("call-accepted", () => setCallState("connected"));
     socket.on("call-rejected", () => setCallState("ended"));
     socket.on("call-ended", () => setCallState("ended"));
@@ -95,7 +85,7 @@ const VideoCall = () => {
     socket.on("webrtc-offer", async ({ offer }) => {
       const stream = await startCamera();
       const pc = createPeer();
-      addTracks(pc, stream);
+      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
 
       await pc.setRemoteDescription(offer);
       const answer = await pc.createAnswer();
@@ -105,36 +95,22 @@ const VideoCall = () => {
     });
 
     socket.on("webrtc-answer", async ({ answer }) => {
-      if (peerRef.current) {
-        await peerRef.current.setRemoteDescription(answer);
-      }
+      await peer.current?.setRemoteDescription(answer);
     });
 
     socket.on("ice-candidate", async ({ candidate }) => {
-      if (peerRef.current) {
-        await peerRef.current.addIceCandidate(candidate);
-      }
+      await peer.current?.addIceCandidate(candidate);
     });
 
-    return () => {
-      socket.off("call-accepted");
-      socket.off("call-rejected");
-      socket.off("call-ended");
-      socket.off("webrtc-offer");
-      socket.off("webrtc-answer");
-      socket.off("ice-candidate");
-    };
-  }, [chatId, isIncoming]);
-
-  /* ---------------- START OFFER WHEN CONNECTED ---------------- */
+    return () => socket.off();
+  }, []);
 
   useEffect(() => {
-    if (callState === "connected" && !isIncoming) {
-      createOffer();
-    }
-  }, [callState]);
+  if (callState === "connected" && !isIncoming) {
+    startCamera().then(createOffer);
+  }
+}, [callState]);
 
-  /* ---------------- END CALL ---------------- */
 
   const endCall = () => {
     socket.emit("end-video-call", { chatId });
@@ -143,93 +119,68 @@ const VideoCall = () => {
 
   useEffect(() => {
     if (callState === "ended") {
-      const t = setTimeout(() => navigate(-1), 800);
-      return () => clearTimeout(t);
+      setTimeout(() => navigate(-1), 500);
     }
   }, [callState]);
 
-  /* ---------------- UI ---------------- */
-
   if (callState === "calling") {
-    return (
-      <Screen>
-        <h2>Calling…</h2>
-        <button onClick={endCall}>Cancel</button>
-      </Screen>
-    );
+    return <button onClick={endCall}>Cancel</button>;
   }
 
   if (callState === "incoming") {
     return (
-      <Screen>
-        <h2>📞 Incoming Call</h2>
-        <button onClick={() => {
-          socket.emit("accept-video-call", { chatId });
-          setCallState("connected");
-        }}>Accept</button>
-        <button onClick={endCall}>Reject</button>
-      </Screen>
+      <>
+        <button
+          onClick={async() => {
+             await startCamera();   
+            socket.emit("accept-video-call", {
+              chatId,
+              callerId,
+            });
+            setCallState("connected");
+          }}
+        >
+          Accept
+        </button>
+
+        <button
+          onClick={() => {
+            socket.emit("reject-video-call", {
+              chatId,
+              callerId,
+            });
+            setCallState("ended");
+          }}
+        >
+          Reject
+        </button>
+      </>
     );
   }
 
   if (callState === "connected") {
     return (
-    <div className="relative w-full h-screen bg-black overflow-hidden">
+      <>
+       <video
+  ref={localVideo}
+  autoPlay
+  muted        // 👈 REQUIRED
+  playsInline  // 👈 REQUIRED (mobile)
+  className="w-40 h-56"
+/>
 
-  {/* Remote Video */}
-  <video
-    ref={remoteVideoRef}
-    autoPlay
-    playsInline
-    className="
-      w-full h-full
-      object-cover
-      rounded-none
-    "
-  />
-
-  {/* Local Video (Picture-in-Picture) */}
-  <video
-    ref={localVideoRef}
-    autoPlay
-    muted
-    playsInline
-    className="
-      absolute
-      bottom-5 right-5
-      w-[140px] h-[200px]
-      object-cover
-      rounded-xl
-      border-2 border-white/80
-      shadow-2xl
-      z-10
-    "
-  />
-
-
-        <button
-          onClick={endCall}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-red-600 px-6 py-3 rounded-full text-white"
-        >
-          End Call
-        </button>
-      </div>
+<video
+  ref={remoteVideo}
+  autoPlay
+  playsInline
+  className="w-full h-full"
+/>
+        <button onClick={endCall}>End</button>
+      </>
     );
   }
 
-  return (
-    <Screen>
-      <h2>Call Ended</h2>
-    </Screen>
-  );
+  return <h2>Call Ended</h2>;
 };
-
-/* ---------------- UI HELPER ---------------- */
-
-const Screen = ({ children }: { children: React.ReactNode }) => (
-  <div className="h-screen bg-black text-white flex items-center justify-center">
-    <div className="text-center space-y-4">{children}</div>
-  </div>
-);
 
 export default VideoCall;

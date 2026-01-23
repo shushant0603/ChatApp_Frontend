@@ -9,6 +9,7 @@ import VerifyOtp from "./components/VerifyOtp";
 import ProtectedRoute from "./protectRoute/ProtectedRoute";
 import PublicRoute from "./protectRoute/PublicRoute";
 import Message from "./pages/Homepage/Message";
+import VideoCall from "./pages/Homepage/videoCall/VideoCall";
 
 // import Home from "./pages/Home";
 // import About from "./pages/About";
@@ -32,6 +33,14 @@ const App: React.FC = () => {
           </ProtectedRoute>
           
           } />
+           <Route path="/videoCall" element={
+          <ProtectedRoute>
+          <VideoCall/>
+          </ProtectedRoute>
+          
+          } />
+                  <Route path="/video/:chatId" element={<VideoCall />} />
+
            <Route path="/message/:receiverId" element={
           <ProtectedRoute>
           <Message/>

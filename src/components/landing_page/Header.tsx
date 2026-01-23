@@ -82,12 +82,15 @@ export default function Header() {
               {link.label}
             </a>
           ))}
-          <a
-            href="#"
-            className="text-gray-700 hover:text-gray-900 text-sm font-medium"
-          >
-            Login
-          </a>
+         <button
+  onClick={() => {
+    setMobileMenuOpen(false);
+    navigate("/login");
+  }}
+  className="text-left text-gray-700 hover:text-gray-900 text-sm font-medium"
+>
+  Login
+</button>
           <button className="bg-apex-orange text-white bg-orange-500 px-6 py-2 rounded text-sm font-medium transition w-full">
             Get Started Free
           </button>
