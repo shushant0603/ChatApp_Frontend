@@ -60,74 +60,83 @@ const Register: React.FC = () => {
     return () => clearTimeout(timer);
   }, [message]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white relative">
-      {/* Popup Message */}
-      {message && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg
+return (
+  <div className="min-h-screen flex items-center justify-center bg-white relative">
+    {/* Popup Message */}
+    {message && (
+      <div
+        className={`fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg
+          ${
+            messageType === "success"
+              ? "bg-orange-500 text-white"
+              : "bg-red-500 text-white"
+          }`}
+      >
+        {message}
+      </div>
+    )}
+
+    <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+      <h2 className="text-3xl font-bold text-center mb-6 text-orange-500">
+        Create Account
+      </h2>
+
+      {/* form */}
+      <div className="space-y-4">
+        <input
+          type="text"
+          placeholder="Name"
+          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300
+          focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300
+          focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300
+          focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <button
+          onClick={handleRegister}
+          disabled={loading}
+          className={`w-full py-3 rounded-lg font-semibold transition
             ${
-              messageType === "success"
-                ? "bg-green-500 text-black"
-                : "bg-red-500 text-white"
+              loading
+                ? "bg-gray-300 cursor-not-allowed text-gray-600"
+                : "bg-orange-500 hover:bg-orange-400 text-white"
             }`}
         >
-          {message}
-        </div>
-      )}
-
-      <div className="w-full max-w-md bg-slate-900 p-8 rounded-2xl shadow-lg">
-        <h2 className="text-3xl font-bold text-center mb-6">Create Account</h2>
-
-        {/* form */}
-        <div className="space-y-4">
-          <input
-            type="text"
-            placeholder="Name"
-            className="w-full px-4 py-3 rounded-lg bg-slate-800"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full px-4 py-3 rounded-lg bg-slate-800"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full px-4 py-3 rounded-lg bg-slate-800"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          <button
-            onClick={handleRegister}
-            disabled={loading}
-            className={`w-full py-3 rounded-lg font-semibold
-              ${
-                loading
-                  ? "bg-slate-600"
-                  : "bg-sky-400 text-black hover:bg-sky-300"
-              }`}
-          >
-            {loading ? "Registering..." : "Sign Up"}
-          </button>
-        </div>
-
-        <p className="text-center text-slate-400 mt-6">
-          Already have an account?{" "}
-          <Link to="/login" className="text-sky-400">
-            Login
-          </Link>
-        </p>
+          {loading ? "Registering..." : "Sign Up"}
+        </button>
       </div>
+
+      <p className="text-center text-gray-600 mt-6">
+        Already have an account?{" "}
+        <Link
+          to="/login"
+          className="text-orange-500 hover:text-orange-400 font-medium"
+        >
+          Login
+        </Link>
+      </p>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default Register;

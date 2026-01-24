@@ -68,81 +68,89 @@ const Login: React.FC = () => {
   }, [message]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white relative">
-      {/* Popup */}
-      {message && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg
-            ${
-              messageType === "success"
-                ? "bg-green-500 text-black"
-                : "bg-red-500 text-white"
-            }`}
-        >
-          {message}
-        </div>
-      )}
-
-      <div className="w-full max-w-md bg-slate-900 p-8 rounded-2xl shadow-lg">
-        <h2 className="text-3xl font-bold text-center mb-6">Login</h2>
-
-        <div className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full px-4 py-3 rounded-lg bg-slate-800"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full px-4 py-3 rounded-lg bg-slate-800"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className={`w-full py-3 rounded-lg font-semibold transition
-              ${
-                loading
-                  ? "bg-slate-600 cursor-not-allowed"
-                  : "bg-sky-400 text-black hover:bg-sky-300"
-              }`}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div className="flex items-center my-6">
-          <div className="flex-1 h-px bg-slate-700" />
-          <span className="px-4 text-slate-400 text-sm">OR</span>
-          <div className="flex-1 h-px bg-slate-700" />
-        </div>
-
-        {/* Social Login */}
-        <div className="flex gap-4">
-          <button className="flex items-center justify-center gap-2 w-full border border-slate-700 py-2 rounded-lg hover:border-sky-400 transition">
-            <FcGoogle size={22} /> Google
-          </button>
-
-          <button className="flex items-center justify-center gap-2 w-full border border-slate-700 py-2 rounded-lg hover:border-sky-400 transition">
-            <FaGithub size={20} /> GitHub
-          </button>
-        </div>
-
-        <p className="text-center text-slate-400 mt-6">
-          Don’t have an account?{" "}
-          <Link to="/register" className="text-sky-400 hover:underline">
-            Sign up
-          </Link>
-        </p>
-      </div>
+<div className="min-h-screen flex items-center justify-center bg-white relative">
+  {/* Popup */}
+  {message && (
+    <div
+      className={`fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg
+        ${
+          messageType === "success"
+            ? "bg-orange-500 text-white"
+            : "bg-red-500 text-white"
+        }`}
+    >
+      {message}
     </div>
+  )}
+
+  <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+    <h2 className="text-3xl font-bold text-center mb-6 text-orange-500">
+      Login
+    </h2>
+
+    <div className="space-y-4">
+      <input
+        type="email"
+        placeholder="Email"
+        className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300
+        focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+
+      <input
+        type="password"
+        placeholder="Password"
+        className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300
+        focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+
+      <button
+        onClick={handleLogin}
+        disabled={loading}
+        className={`w-full py-3 rounded-lg font-semibold transition
+          ${
+            loading
+              ? "bg-gray-300 cursor-not-allowed text-gray-600"
+              : "bg-orange-500 hover:bg-orange-400 text-white"
+          }`}
+      >
+        {loading ? "Logging in..." : "Login"}
+      </button>
+    </div>
+
+    {/* Divider */}
+    <div className="flex items-center my-6">
+      <div className="flex-1 h-px bg-gray-300" />
+      <span className="px-4 text-gray-500 text-sm">OR</span>
+      <div className="flex-1 h-px bg-gray-300" />
+    </div>
+
+    {/* Social Login */}
+    <div className="flex gap-4">
+      <button className="flex items-center justify-center gap-2 w-full border border-gray-300 py-2 rounded-lg hover:border-orange-500 transition">
+        <FcGoogle size={22} /> Google
+      </button>
+
+      <button className="flex items-center justify-center gap-2 w-full border border-gray-300 py-2 rounded-lg hover:border-orange-500 transition">
+        <FaGithub size={20} /> GitHub
+      </button>
+    </div>
+
+    <p className="text-center text-gray-600 mt-6">
+      Don’t have an account?{" "}
+      <Link
+        to="/register"
+        className="text-orange-500 hover:text-orange-400 font-medium"
+      >
+        Sign up
+      </Link>
+    </p>
+  </div>
+</div>
+
   );
 };
 
